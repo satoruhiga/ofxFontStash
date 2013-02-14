@@ -6,21 +6,21 @@
 //  Copyright (c) 2012 uri.cat. All rights reserved.
 //
 /*
- 
+
  The MIT License
- 
+
  Copyright (c) 2012, Oriol Ferrer Mesià.
- 
+
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in
  all copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -38,7 +38,7 @@
 ofxFontStash::ofxFontStash(){
 	stashFontID = 0;
 	lineHeight = 1.0f;
-	stash = NULL; 
+	stash = NULL;
 }
 
 ofxFontStash::~ofxFontStash(){
@@ -46,11 +46,11 @@ ofxFontStash::~ofxFontStash(){
 }
 
 bool ofxFontStash::setup( string fontFile, float lineHeightPercent ){
-	
+
 	if (stash == NULL){
 		lineHeight = lineHeightPercent;
 		stash = sth_create(512,512);
-		stashFontID = sth_add_font( stash, ofToDataPath( fontFile ).c_str() );			
+		stashFontID = sth_add_font( stash, ofToDataPath( fontFile ).c_str() );
 		if ( stashFontID != 0){
 			printf("ofxFontStash : loaded font %s\n", fontFile.c_str() );
 			return true;
@@ -65,42 +65,41 @@ bool ofxFontStash::setup( string fontFile, float lineHeightPercent ){
 
 
 void ofxFontStash::draw( string text, float size, int x, int y, bool automaticBeginEnd ){
-	
+
 	if (stash != NULL){
-		
+
 		if (automaticBeginEnd) sth_begin_draw(stash);
-		
+
 		float dx = 0;
 		sth_draw_text( stash, stashFontID, size, x, y , text.c_str(), &dx );
-		
+
 		if (automaticBeginEnd) sth_end_draw(stash);
-		
+
 	}else{
 		printf("ofxFontStash : can't draw() without having been setup first!\n");
-	}		
+	}
 }
 
 void ofxFontStash::drawMultiLine( string text, float size, int x, int y, bool automaticBeginEnd ){
-	
+
 	if (stash != NULL){
-		
+
 		if (automaticBeginEnd) sth_begin_draw(stash);
-		
+
 		stringstream ss(text);
 		string s;
 		int line = 0;
 		while ( getline(ss, s, '\n') ) {
-			//cout << s << endl;
 			float dx = 0;
 			sth_draw_text( stash, stashFontID, size, x, y + size * lineHeight * line, s.c_str(), &dx );
-			line ++;
+			line++;
 		}
-		
+
 		if (automaticBeginEnd) sth_end_draw(stash);
-		
+
 	}else{
 		printf("ofxFontStash : can't drawMultiLine() without having been setup first!\n");
-	}		
+	}
 }
 
 ofRectangle ofxFontStash::getBoundingBoxSize( string text, float size, int x, int y ){
@@ -116,5 +115,49 @@ ofRectangle ofxFontStash::getBoundingBoxSize( string text, float size, int x, in
 	}else{
 		printf("ofxFontStash : can't getBoundingBoxSize() without having been setup first!\n");
 	}
+	return r;
+}
+
+ofRectangle ofxFontStash::getBoundingBoxSizeMultiLine( string text, float size, int x, int y )
+{
+	ofRectangle r;
+
+	if (stash != NULL){
+
+		stringstream ss(text);
+		string s;
+		int line = 0;
+		
+		ofVec2f topleft(INFINITY, INFINITY), bottomright(0, 0);
+		
+		while ( getline(ss, s, '\n') ) {
+			float dx = 0;
+
+			ofRectangle rr;
+			sth_dim_text( stash, stashFontID, size, s.c_str(), &rr.x, &rr.y, &rr.width, &rr.height);
+			rr.width = fabs(rr.width - rr.x);
+			rr.height = fabs(rr.x - rr.height);
+			
+			rr.x = x;
+			rr.y = y - rr.height + size * lineHeight * line;
+			
+			topleft.x = min(topleft.x, rr.x);
+			topleft.y = min(topleft.y, rr.y);
+			
+			bottomright.x = max(bottomright.x, rr.x + rr.width);
+			bottomright.y = max(bottomright.y, rr.y + rr.height);
+
+			line++;
+		}
+		
+		r.x = topleft.x;
+		r.y = topleft.y;
+		r.width = bottomright.x - topleft.x;
+		r.height = bottomright.y - topleft.y;
+		
+	}else{
+		printf("ofxFontStash : can't getBoundingBoxSize() without having been setup first!\n");
+	}
+	
 	return r;
 }

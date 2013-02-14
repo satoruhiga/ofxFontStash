@@ -8,7 +8,7 @@ void testApp::setup(){
 	ofSetFrameRate(60);
 	ofBackground(22, 22, 22, 255);
 
-	font.setup("verdana.ttf", 1.3); //load verdana font, set lineHeight to be 130%
+	font.setup("OpenSans.ttf", 1.3); //load verdana font, set lineHeight to be 130%
 
 }
 
@@ -52,6 +52,13 @@ void testApp::draw(){
 	string s = (string)"this paragraph has" + "\n" + "multiple lines.";
 	font.drawMultiLine( s,  fontSize, x, y);
 	
+	
+	// multiline bounding box demo ///////////////////////////////////////////////////
+	
+	ofSetColor(255, 0, 0, 64);
+	bbox = font.getBoundingBoxSizeMultiLine( s, fontSize, x, y);
+	ofRect( bbox );
+
 	
 	// batch drawing, optimized for multiple drawing calls /////////////////
 	
